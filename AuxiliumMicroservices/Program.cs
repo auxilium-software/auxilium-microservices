@@ -17,29 +17,8 @@ namespace AuxiliumMicroservices
   / ____ \ |_| |>  <| | | | |_| | | | | | |        | | (_| \__ \   <      | | \ \ |_| | | | | | | |  __/ |   
  /_/    \_\__,_/_/\_\_|_|_|\__,_|_| |_| |_|        |_|\__,_|___/_|\_\     |_|  \_\__,_|_| |_|_| |_|\___|_|   
 ");
-
-            string configPath = null;
-
-            for (int i = 0; i < args.Length; i++)
-            {
-                if (args[i].Equals("--config", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
-                {
-                    configPath = args[i + 1];
-                    break;
-                }
-            }
-
-            if (string.IsNullOrEmpty(configPath))
-            {
-                ConsoleWriting.CatastrophicFail("No configuration file provided. Use --config <path>\n");
-                Environment.Exit(1);
-            }
-
-            ConfigurationUtilities.ConfigurationFileLocation = configPath;
-            ConsoleWriting.Debug($"Using config file: {configPath}\n");
-
+            ArgumentParsing.SortConfigFileLocation(args);
             await Preflight.Go();
-
         }
     }
 }
