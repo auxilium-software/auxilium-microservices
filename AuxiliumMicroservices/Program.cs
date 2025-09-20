@@ -38,18 +38,8 @@ namespace AuxiliumMicroservices
             ConfigurationUtilities.ConfigurationFileLocation = configPath;
             ConsoleWriting.Debug($"Using config file: {configPath}\n");
 
-            ConsoleWriting.Debug("Starting preflight...\n");
+            await Preflight.Go();
 
-            try
-            {
-                await Preflight.Go();
-                ConsoleWriting.Success("\nAll services verified successfully.\n");
-            }
-            catch (Exception ex)
-            {
-                ConsoleWriting.CatastrophicFail($"\nPreflight checks failed: {ex.Message}\n");
-                Environment.Exit(1);
-            }
         }
     }
 }

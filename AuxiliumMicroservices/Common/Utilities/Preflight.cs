@@ -34,20 +34,30 @@ namespace AuxiliumMicroservices.Common.Utilities
 
         internal static async Task Go()
         {
-            int total = Services.Length;
-            for (int i = 0; i < total; i++)
+            ConsoleWriting.Debug("Starting preflight...\n");
+            try
             {
-                string service = Services[i];
-                Func<Task<bool>> testFunc = service switch
+                int total = Services.Length;
+                for (int i = 0; i < total; i++)
                 {
-                    "CouchDB" => CouchDBInteractions.Test,
-                    "MariaDB" => MariaDBInteractions.Test,
-                    "RabbitMQ" => RabbitMQInteractions.Test,
-                    "Redis" => RedisInteractions.Test,
-                    _ => throw new ArgumentOutOfRangeException()
-                };
+                    string service = Services[i];
+                    Func<Task<bool>> testFunc = service switch
+                    {
+                        "CouchDB" => CouchDBInteractions.Test,
+                        "MariaDB" => MariaDBInteractions.Test,
+                        "RabbitMQ" => RabbitMQInteractions.Test,
+                        "Redis" => RedisInteractions.Test,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
 
-                await CheckServiceAsync(service, testFunc, i + 1, total);
+                    await CheckServiceAsync(service, testFunc, i + 1, total);
+                }
+                ConsoleWriting.Success("\nAll services verified successfully.\n");
+            }
+            catch (Exception ex)
+            {
+                ConsoleWriting.CatastrophicFail($"\nPreflight checks failed: {ex.Message}\n");
+                Environment.Exit(1);
             }
         }
     }
