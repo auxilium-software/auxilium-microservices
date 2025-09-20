@@ -7,44 +7,6 @@ namespace AuxiliumMicroservices
 {
     internal class Program
     {
-        private static readonly string[] Services =
-            { "CouchDB", "MariaDB", "RabbitMQ", "Redis" };
-
-        private static async Task CheckServiceAsync(string serviceName, Func<Task<bool>> testFunc, int step, int total)
-        {
-            ConsoleWriting.Debug($"[ {step}/{total} ] Checking connection to {serviceName + " server...",-20}");
-
-            bool success = await testFunc();
-            if (success)
-            {
-                ConsoleWriting.Success("SUCCESS\n");
-            }
-            else
-            {
-                ConsoleWriting.CatastrophicFail("FAILURE\n");
-                throw new Exception($"{serviceName} connection failed");
-            }
-        }
-
-        private static async Task Preflight()
-        {
-            int total = Services.Length;
-            for (int i = 0; i < total; i++)
-            {
-                string service = Services[i];
-                Func<Task<bool>> testFunc = service switch
-                {
-                    "CouchDB" => CouchDBInteractions.Test,
-                    "MariaDB" => MariaDBInteractions.Test,
-                    "RabbitMQ" => RabbitMQInteractions.Test,
-                    "Redis" => RedisInteractions.Test,
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-
-                await CheckServiceAsync(service, testFunc, i + 1, total);
-            }
-        }
-
         static async Task Main(string[] args)
         {
             Console.WriteLine(@"
@@ -80,7 +42,7 @@ namespace AuxiliumMicroservices
 
             try
             {
-                await Preflight();
+                await Preflight.Go();
                 ConsoleWriting.Success("\nAll services verified successfully.\n");
             }
             catch (Exception ex)
