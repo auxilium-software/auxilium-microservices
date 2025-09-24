@@ -1,7 +1,6 @@
 ﻿using AuxiliumMicroservices.Common.ServiceInteractions;
 using AuxiliumMicroservices.Common.Utilities;
-using System;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace AuxiliumMicroservices
 {
@@ -20,6 +19,11 @@ namespace AuxiliumMicroservices
 
             ArgumentParsing.SortConfigFileLocation(args);
             await Preflight.Go();
+
+            await RabbitMQInteractions.ConsumeMessagesAsync("Notifications", async (message) =>
+            {
+                return true;
+            }, CancellationToken.None);
         }
     }
 }
