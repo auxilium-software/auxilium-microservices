@@ -39,7 +39,7 @@ namespace AuxiliumMicroservices.Common.Utilities
                     ["Redis"] = new Dictionary<object, object>
                     {
                         ["Port"] = 6379,
-                        ["ConnectionTimeout"] = 5,
+                        ["ConnectTimeout"] = 5,
                         ["SocketTimeout"] = 5,
                         ["DecodeResponses"] = true,
                         ["RetryOnTimeout"] = true,
