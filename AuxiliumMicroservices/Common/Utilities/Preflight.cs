@@ -13,6 +13,7 @@ namespace AuxiliumMicroservices.Common.Utilities
             "CouchDB",
             "MariaDB",
             "RabbitMQ",
+            "ClickHouse",
         };
 
         private static async Task CheckServiceAsync(string serviceName, Func<Task<bool>> testFunc, int step, int total)
@@ -45,6 +46,8 @@ namespace AuxiliumMicroservices.Common.Utilities
                         "CouchDB" => CouchDBInteractions.Test,
                         "MariaDB" => MariaDBInteractions.Test,
                         "RabbitMQ" => RabbitMQInteractions.Test,
+                        "ClickHouse" => ClickHouseInteractions.Test,
+                        _ => throw new ArgumentOutOfRangeException(),
                     };
 
                     await CheckServiceAsync(service, testFunc, i + 1, total);

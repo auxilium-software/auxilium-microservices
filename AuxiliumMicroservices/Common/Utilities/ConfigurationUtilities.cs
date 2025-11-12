@@ -50,7 +50,22 @@ namespace AuxiliumMicroservices.Common.Utilities
                         ["Port"] = 5672,
                         ["Heartbeat"] = 600,
                         ["BlockedConnectionTimeout"] = 300
-                    }
+                    },
+                    ["ClickHouse"] = new Dictionary<object, object>
+                    {
+                        ["HTTPPort"] = 8123,
+                        ["TCPPort"] = 9000,
+                        ["Secure"] = false,
+                        ["Verify"] = true,
+                        ["Compression"] = true,
+                        ["ConnectTimeout"] = 10,
+                        ["SendRecievedTimeout"] = 300,
+                        ["BatchSize"] = 100,
+                        ["FlushInterval"] = 5,
+                        ["MaxQueueSize"] = 10000,
+                        ["TTLDays"] = 0,
+                        ["PartitionBy"] = "toYYYYMM(timestamp)",
+                    },
                 },
                 ["ReCAPTCHA"] = new Dictionary<object, object>
                 {
