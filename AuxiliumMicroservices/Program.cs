@@ -6,6 +6,20 @@ namespace AuxiliumMicroservices
 {
     internal class Program
     {
+        static async Task<bool> Consumer_Notifications(string message)
+        {
+            try
+            {
+                Console.WriteLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] [Notifications] {message}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Notifications] Error: {ex.Message}");
+                return false;
+            }
+        }
+
         static async Task Main(string[] args)
         {
             Console.WriteLine(@"
@@ -20,10 +34,35 @@ namespace AuxiliumMicroservices
             ArgumentParsing.SortConfigFileLocation(args);
             await Preflight.Go();
 
-            await RabbitMQInteractions.ConsumeMessagesAsync("Notifications", async (message) =>
+            using var cts = new CancellationTokenSource();
+
+            Console.CancelKeyPress += (sender, e) =>
             {
-                return true;
-            }, CancellationToken.None);
+                e.Cancel = true;
+                cts.Cancel();
+                ConsoleWriting.CatastrophicFail("\nShutdown signal received, stopping consumers...");
+            };
+
+            ConsoleWriting.Debug("Starting message consumers...\n");
+
+            var tasks = new[]
+            {
+                RabbitMQInteractions.ConsumeMessagesAsync("Notifications",  Consumer_Notifications,     cts.Token),
+            };
+
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("Consumers stopped gracefully.");
+            }
+            catch (Exception ex)
+            {
+                ConsoleWriting.CatastrophicFail($"Fatal error: {ex.Message}");
+                throw;
+            }
         }
     }
 }
