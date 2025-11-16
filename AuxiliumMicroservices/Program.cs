@@ -1,4 +1,5 @@
-﻿using AuxiliumMicroservices.Common.ServiceInteractions;
+﻿using AuxiliumMicroservices.Common.Consumers;
+using AuxiliumMicroservices.Common.ServiceInteractions;
 using AuxiliumMicroservices.Common.Utilities;
 using System.Threading;
 
@@ -35,7 +36,6 @@ namespace AuxiliumMicroservices
             await Preflight.Go();
 
             using var cts = new CancellationTokenSource();
-
             Console.CancelKeyPress += (sender, e) =>
             {
                 e.Cancel = true;
@@ -45,24 +45,10 @@ namespace AuxiliumMicroservices
 
             ConsoleWriting.Debug("Starting message consumers...\n");
 
-            var tasks = new[]
-            {
-                RabbitMQInteractions.ConsumeMessagesAsync("Notifications",  Consumer_Notifications,     cts.Token),
-            };
+            ConsumerController.AddConsumer("Notifications",
+                ct => NotificationConsumer.NotificationConsumerRunner(ct));
 
-            try
-            {
-                await Task.WhenAll(tasks);
-            }
-            catch (OperationCanceledException)
-            {
-                Console.WriteLine("Consumers stopped gracefully.");
-            }
-            catch (Exception ex)
-            {
-                ConsoleWriting.CatastrophicFail($"Fatal error: {ex.Message}");
-                throw;
-            }
+            await ConsumerController.StartConsumers(cts.Token);
         }
     }
 }
