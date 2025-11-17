@@ -28,7 +28,6 @@ namespace AuxiliumMicroservices.Common.Utilities
             }
 
             ConfigurationUtilities.ConfigurationFileLocation = configPath;
-            ConsoleWriting.Debug($"Using config file: {configPath}\n");
             ConsoleWriting.Debug($"Using config file: {configPath}\n\n");
         }
     }
