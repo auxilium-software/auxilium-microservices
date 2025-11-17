@@ -8,18 +8,18 @@ namespace AuxiliumMicroservices.Common.Utilities
 {
     internal static class StateTableWriter
     {
+        private const int queueNameWidth = 30;
+        private const int statusWidth = 20;
+
         private static int lastTotalLines = 0;
         private static bool firstRender = true;
 
         internal static async Task<bool> OutputStatusTable(CancellationToken cancellationToken)
         {
-            while(!cancellationToken.IsCancellationRequested)
+            string separator = new('-', queueNameWidth + (statusWidth * 3) + (3 * 3) + 4);
+
+            while (!cancellationToken.IsCancellationRequested)
             {
-                const int queueNameWidth = 30;
-                const int statusWidth = 20;
-
-                string separator = new('-', queueNameWidth + (statusWidth * 3) + (3 * 3) + 4);
-
                 if (!firstRender)
                 {
                     Console.SetCursorPosition(0, Console.CursorTop - lastTotalLines);
