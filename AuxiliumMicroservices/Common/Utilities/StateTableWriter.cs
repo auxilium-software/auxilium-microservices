@@ -66,8 +66,6 @@ namespace AuxiliumMicroservices.Common.Utilities
 
                 lastTotalLines = currentTotalLines;
                 firstRender = false;
-
-
             }
             return true;
         }
