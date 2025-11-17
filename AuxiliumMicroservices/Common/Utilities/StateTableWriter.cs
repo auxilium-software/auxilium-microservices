@@ -11,7 +11,7 @@ namespace AuxiliumMicroservices.Common.Utilities
         private static int lastTotalLines = 0;
         private static bool firstRender = true;
 
-        internal static void OutputStatusTable()
+        internal static async Task<bool> OutputStatusTable(CancellationToken cancellationToken)
         {
             const int queueNameWidth = 30;
             const int statusWidth = 20;
@@ -64,6 +64,8 @@ namespace AuxiliumMicroservices.Common.Utilities
 
             lastTotalLines = currentTotalLines;
             firstRender = false;
+
+            return true;
         }
     }
 }

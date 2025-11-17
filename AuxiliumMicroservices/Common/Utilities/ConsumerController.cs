@@ -29,6 +29,8 @@ namespace AuxiliumMicroservices.Common.Utilities
                 tasks.Add(kvp.Value.StartTask(cancellationToken));
             }
 
+            tasks.Add(StateTableWriter.OutputStatusTable(cancellationToken));
+
             try
             {
                 await Task.WhenAll(tasks);
