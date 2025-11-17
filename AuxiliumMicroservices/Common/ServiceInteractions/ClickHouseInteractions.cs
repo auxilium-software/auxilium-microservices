@@ -11,7 +11,7 @@ namespace AuxiliumMicroservices.Common.ServiceInteractions
         internal static string GenerateConnectionString()
         {
             string hostname = ConfigurationUtilities.GetString("Databases", "ClickHouse", "Host");
-            int port = ConfigurationUtilities.GetInteger("Databases", "ClickHouse", "HTTPPort");
+            int    port     = ConfigurationUtilities.GetInteger("Databases", "ClickHouse", "HTTPPort");
             string username = ConfigurationUtilities.GetString("Databases", "ClickHouse", "Username");
             string password = ConfigurationUtilities.GetString("Databases", "ClickHouse", "Password");
             string database = ConfigurationUtilities.GetString("Databases", "ClickHouse", "Database");

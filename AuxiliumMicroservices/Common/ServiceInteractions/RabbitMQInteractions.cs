@@ -15,15 +15,15 @@ namespace AuxiliumMicroservices.Common.ServiceInteractions
             int    port     = ConfigurationUtilities.GetInteger("Databases", "RabbitMQ", "Port");
             string username = ConfigurationUtilities.GetString("Databases", "RabbitMQ", "Username");
             string password = ConfigurationUtilities.GetString("Databases", "RabbitMQ", "Password");
-            string vhost    = ConfigurationUtilities.GetString("Databases", "RabbitMQ", "VirtualHost");
+            string vHost    = ConfigurationUtilities.GetString("Databases", "RabbitMQ", "VirtualHost");
 
             return new ConnectionFactory
             {
-                HostName = hostname,
-                Port = port,
-                UserName = username,
-                Password = password,
-                VirtualHost = vhost
+                HostName    = hostname,
+                Port        = port,
+                UserName    = username,
+                Password    = password,
+                VirtualHost = vHost
             };
         }
 
