@@ -63,7 +63,8 @@ namespace AuxiliumMicroservices.Common.ServiceInteractions
                     durable: true,
                     exclusive: false,
                     autoDelete: false,
-                    arguments: null);
+                    arguments: null
+                );
 
                 await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
 
@@ -74,7 +75,7 @@ namespace AuxiliumMicroservices.Common.ServiceInteractions
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
 
-                    Console.WriteLine($"Received message from queue '{queueKey}': {message}");
+                    Logger.Info(queueKey, $"Received message: {message}");
 
                     try
                     {
@@ -83,17 +84,17 @@ namespace AuxiliumMicroservices.Common.ServiceInteractions
                         if (success)
                         {
                             await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
-                            Console.WriteLine("Message processed successfully");
+                            Logger.Info(queueKey, "Message acknowledged");
                         }
                         else
                         {
                             await channel.BasicNackAsync(deliveryTag: ea.DeliveryTag, multiple: false, requeue: true);
-                            Console.WriteLine("Message processing failed, requeued");
+                            Logger.Warning(queueKey, "Message processing failed, requeued");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error processing message: {ex.Message}");
+                        Logger.Error(queueKey, $"Error processing message: {ex.Message}\n{ex.StackTrace}");
                         await channel.BasicNackAsync(deliveryTag: ea.DeliveryTag, multiple: false, requeue: true);
                     }
                 };
@@ -101,7 +102,8 @@ namespace AuxiliumMicroservices.Common.ServiceInteractions
                 await channel.BasicConsumeAsync(
                     queue: ConfigurationUtilities.GetString("Databases", "RabbitMQ", "Queues", queueKey),
                     autoAck: false, // Manual acknowledgment
-                    consumer: consumer);
+                    consumer: consumer
+                );
 
                 Console.WriteLine($"Started consuming messages from queue '{queueKey}'. Press Ctrl+C to stop.");
 

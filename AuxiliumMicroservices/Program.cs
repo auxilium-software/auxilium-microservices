@@ -7,20 +7,6 @@ namespace AuxiliumMicroservices
 {
     internal class Program
     {
-        static async Task<bool> Consumer_Notifications(string message)
-        {
-            try
-            {
-                Console.WriteLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] [Notifications] {message}");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Notifications] Error: {ex.Message}");
-                return false;
-            }
-        }
-
         static async Task Main(string[] args)
         {
             Console.WriteLine(@"
@@ -45,8 +31,10 @@ namespace AuxiliumMicroservices
 
             ConsoleWriting.Debug("Starting message consumers...\n");
 
-            ConsumerController.AddConsumer("Notifications",
-                ct => NotificationConsumer.NotificationConsumerRunner(ct));
+            ConsumerController.AddConsumer(
+                "Notifications",
+                message => NotificationConsumer.NotificationConsumerRunner(message)
+            );
 
             await ConsumerController.StartConsumers(cts.Token);
         }

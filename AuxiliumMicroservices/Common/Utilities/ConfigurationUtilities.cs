@@ -10,7 +10,7 @@ namespace AuxiliumMicroservices.Common.Utilities
     {
         internal static string ConfigurationFileLocation;
 
-        private static Dictionary<object, object>? GetConfiguration()
+        private static Dictionary<object, object> GetConfiguration()
         {
             if (!File.Exists(ConfigurationFileLocation))
             {
@@ -53,8 +53,11 @@ namespace AuxiliumMicroservices.Common.Utilities
                     },
                     ["ClickHouse"] = new Dictionary<object, object>
                     {
-                        ["HTTPPort"] = 8123,
-                        ["TCPPort"] = 9000,
+                        ["Ports"] = new Dictionary<object, object>
+                        {
+                            ["HTTP"] = 8123,
+                            ["TCP"] = 9000,
+                        },
                         ["Secure"] = false,
                         ["Verify"] = true,
                         ["Compression"] = true,

@@ -1,4 +1,5 @@
 ﻿using AuxiliumMicroservices.Common.DataClasses;
+using AuxiliumMicroservices.Common.ServiceInteractions;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -10,13 +11,9 @@ namespace AuxiliumMicroservices.Common.Utilities
     {
         private static Dictionary<string, ConsumerDetailsWrapper> consumers = new();
 
-        internal static void AddConsumer(string consumerName, Func<CancellationToken, Task<bool>> consumerFactory)
+        internal static void AddConsumer(string consumerName, Func<string, Task<bool>> messageHandler)
         {
-            ConsumerDetailsWrapper temp = new(
-                consumerName,
-                consumerFactory
-            );
-            consumers.Add(consumerName, temp);
+            RabbitMQInteractions.ConsumeMessagesAsync(consumerName, messageHandler);
         }
 
         internal static async Task StartConsumers(CancellationToken cancellationToken)
