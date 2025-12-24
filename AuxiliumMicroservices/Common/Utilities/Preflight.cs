@@ -43,7 +43,6 @@ namespace AuxiliumMicroservices.Common.Utilities
                     string service = Services[i];
                     Func<Task<bool>> testFunc = service switch
                     {
-                        "CouchDB" => CouchDBInteractions.Test,
                         "MariaDB" => MariaDBInteractions.Test,
                         "RabbitMQ" => RabbitMQInteractions.Test,
                         "ClickHouse" => ClickHouseInteractions.Test,
