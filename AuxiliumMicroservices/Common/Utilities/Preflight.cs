@@ -10,7 +10,6 @@ namespace AuxiliumMicroservices.Common.Utilities
     internal static class Preflight
     {
         private static readonly string[] Services = {
-            "CouchDB",
             "MariaDB",
             "RabbitMQ",
             "ClickHouse",
