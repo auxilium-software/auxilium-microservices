@@ -29,6 +29,16 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services.Implem
                 <p>If you did not request this, you can safely ignore this email.</p>
                 """,
 
+            ["account-created"] = """
+                <h2>Welcome to Auxilium</h2>
+                <p>Hi {{fullName}},</p>
+                <p>An account has been created for you. To get started,
+                click the link below to set your password:</p>
+                <p><a href="{{resetLink}}">Set Password</a></p>
+                <p>This link will expire in {{expiryHours}} hours.</p>
+                <p>If you did not expect this, please contact your administrator.</p>
+                """,
+
             ["fallback"] = """
                 <p>{{body}}</p>
                 """
