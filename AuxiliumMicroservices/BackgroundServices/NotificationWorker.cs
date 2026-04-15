@@ -1,8 +1,9 @@
-﻿
-using AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services;
+﻿using AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services;
+using AuxiliumSoftware.AuxiliumServices.Common.EntityFramework;
 using AuxiliumSoftware.AuxiliumServices.Common.Messaging.Interfaces;
 using AuxiliumSoftware.AuxiliumServices.Common.Messaging.Models;
 using AuxiliumSoftware.AuxiliumServices.Common.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -150,23 +151,41 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
 
             using var scope = _scopeFactory.CreateScope();
 
+            var db = scope.ServiceProvider.GetRequiredService<AuxiliumDbContext>();
             var templateRenderer = scope.ServiceProvider.GetRequiredService<IEmailTemplateRenderer>();
             var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
-            var htmlBody = templateRenderer.Render(message.TemplateName, "en-GB", message.TemplateData);
+            // resolve user from the database
+            var targetUser = await db.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == message.UserId, cancellationToken);
+
+            if (targetUser == null)
+            {
+                _logger.LogWarning(
+                    "User {UserId} not found for message {MessageId}, skipping",
+                    message.UserId, ea.BasicProperties?.MessageId);
+                return;
+            }
+
+            var locale = targetUser.LanguagePreference ?? "en-GB";
+
+            // inject user fields into template data (won't overwrite if the producer set them explicitly)
+            message.TemplateData.TryAdd("display_name", targetUser.FullName ?? targetUser.EmailAddress);
+
+            var htmlBody = templateRenderer.Render(message.TemplateName, locale, message.TemplateData);
+            var subject = templateRenderer.TranslateSubject(message.Subject, locale);
 
             await emailService.SendAsync(
-                to: message.To,
-                subject: message.Subject,
+                to: targetUser.EmailAddress,
+                subject: subject,
                 htmlBody: htmlBody,
-                cc: message.Cc,
-                bcc: message.Bcc,
                 cancellationToken: cancellationToken
             );
 
             _logger.LogInformation(
-                "Email sent to {To} via template '{Template}' (message {MessageId})",
-                message.To, message.TemplateName, ea.BasicProperties?.MessageId
+                "Email sent to {To} via template '{Template}' (locale: {Locale}, message {MessageId})",
+                targetUser.EmailAddress, message.TemplateName, locale, ea.BasicProperties?.MessageId
             );
         }
 

@@ -51,17 +51,7 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services.Implem
             var scriptObject = new ScriptObject();
 
             // register t() - looks up the locale, falls back to the key itself (which is English)
-            scriptObject.Import("t", new Func<string, string>(key =>
-            {
-                if (_translations.TryGetValue(key, out var locales)
-                    && locales.TryGetValue(locale, out var translated)
-                    && !string.IsNullOrEmpty(translated))
-                {
-                    return WebUtility.HtmlEncode(translated);
-                }
-
-                return WebUtility.HtmlEncode(key);
-            }));
+            scriptObject.Import("t", new Func<string, string>(key => Translate(key, locale)));
 
             // add template variables (html-encoded)
             foreach (var (key, value) in data)
@@ -76,6 +66,23 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services.Implem
             context.PushGlobal(scriptObject);
 
             return template.Render(context);
+        }
+
+        public string TranslateSubject(string subject, string locale)
+        {
+            return Translate(subject, locale);
+        }
+
+        private string Translate(string key, string locale)
+        {
+            if (_translations.TryGetValue(key, out var locales)
+                && locales.TryGetValue(locale, out var translated)
+                && !string.IsNullOrEmpty(translated))
+            {
+                return translated;
+            }
+
+            return key;
         }
 
         private Dictionary<string, Dictionary<string, string>> LoadTranslations()
