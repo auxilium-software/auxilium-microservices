@@ -153,7 +153,7 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
             var templateRenderer = scope.ServiceProvider.GetRequiredService<IEmailTemplateRenderer>();
             var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
-            var htmlBody = templateRenderer.Render(message.TemplateName, message.TemplateData);
+            var htmlBody = templateRenderer.Render(message.TemplateName, "en-GB", message.TemplateData);
 
             await emailService.SendAsync(
                 to: message.To,
@@ -161,11 +161,13 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
                 htmlBody: htmlBody,
                 cc: message.Cc,
                 bcc: message.Bcc,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken
+            );
 
             _logger.LogInformation(
                 "Email sent to {To} via template '{Template}' (message {MessageId})",
-                message.To, message.TemplateName, ea.BasicProperties?.MessageId);
+                message.To, message.TemplateName, ea.BasicProperties?.MessageId
+            );
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)

@@ -6,6 +6,6 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services
 {
     public interface IEmailTemplateRenderer
     {
-        string Render(string templateName, Dictionary<string, string> data);
+        string Render(string templateName, string locale, Dictionary<string, string> data);
     }
 }
