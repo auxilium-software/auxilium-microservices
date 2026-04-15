@@ -158,13 +158,13 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
             // resolve user from the database
             var targetUser = await db.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == message.UserId, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == message.TargetUserId, cancellationToken);
 
             if (targetUser == null)
             {
                 _logger.LogWarning(
                     "User {UserId} not found for message {MessageId}, skipping",
-                    message.UserId, ea.BasicProperties?.MessageId);
+                    message.TargetUserId, ea.BasicProperties?.MessageId);
                 return;
             }
 
