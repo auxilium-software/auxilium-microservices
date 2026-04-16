@@ -2,6 +2,12 @@
   "A password reset has been requested for your account. Click the button below to set a new password:": {
     "cy-GB": ""
   },
+  "A New Client Has Registered": {
+    "cy-GB": ""
+  },
+  "A new client has signed up to the portal. Their details are available below - please review and assign a case worker as appropriate.": {
+    "cy-GB": ""
+  },
   "An account has been created for you. To get started, click the button below to set your password:": {
     "cy-GB": ""
   },
@@ -9,6 +15,22 @@
     "cy-GB": ""
   },
   "Auxilium": {
+    "cy-GB": ""
+  },
+
+
+
+
+
+  "Client User ID": {
+    "cy-GB": ""
+  },
+
+
+
+
+
+  "For your security, client details are not included in this email. Please log in to the portal to view them.": {
     "cy-GB": ""
   },
 
@@ -34,6 +56,14 @@
     "cy-GB": ""
   },
   "If you need help, contact your system administrator.": {
+    "cy-GB": ""
+  },
+
+
+
+
+
+  "New Client Registration": {
     "cy-GB": ""
   },
 
@@ -73,6 +103,14 @@
   },
 
   "This link will expire in {hours} hours.": {
+    "cy-GB": ""
+  },
+
+
+
+
+
+  "View Client in Portal": {
     "cy-GB": ""
   },
 
