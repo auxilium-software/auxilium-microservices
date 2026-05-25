@@ -3,7 +3,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS restore
 
 WORKDIR /src
-COPY *.csproj ./
+COPY *.sln ./
+COPY AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner/*.csproj \
+    AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner/
 RUN dotnet restore
 
 
@@ -11,14 +13,18 @@ RUN dotnet restore
 FROM restore AS publish
 
 COPY . .
-RUN dotnet publish -c Release -o /app/publish --no-restore
+RUN dotnet publish AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner/AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.csproj \
+    -c Release -o /app/publish --no-restore
 
 
 # dev
 FROM restore AS dev
 
 ENV DOTNET_ENVIRONMENT=Development
-ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]
+ENTRYPOINT ["dotnet", "watch", "run", \
+            "--project", "AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner", \
+            "--no-launch-profile", \
+            "--", "--config-path", "/etc/auxilium/config.yaml"]
 
 
 # prod
@@ -26,7 +32,7 @@ FROM mcr.microsoft.com/dotnet/runtime:10.0-alpine AS prod
 
 WORKDIR /app
 COPY --from=publish /app/publish .
-
 RUN mkdir -p /etc/auxilium
 
-ENTRYPOINT ["dotnet", "AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.dll"]
+ENTRYPOINT ["dotnet", "AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.dll", \
+            "--config-path", "/etc/auxilium/config.yaml"]
