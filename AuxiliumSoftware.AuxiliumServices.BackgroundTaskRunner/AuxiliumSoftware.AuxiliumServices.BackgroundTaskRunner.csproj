@@ -8,9 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AuxiliumSoftware.AuxiliumServices.Common" Version="3.0.26.5" />
+    <PackageReference Include="AuxiliumSoftware.AuxiliumServices.Common" Version="3.0.29" />
+    <PackageReference Include="MailKit" Version="4.16.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.6" />
-    <PackageReference Include="Scriban" Version="7.1.0" />
+    <PackageReference Include="Scriban" Version="7.2.1" />
     <PackageReference Include="YamlDotNet.NetCore" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
