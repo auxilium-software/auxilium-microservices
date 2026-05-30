@@ -24,17 +24,21 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services.Implem
         }
 
         public async Task SendAsync(
-            string to, string subject, string htmlBody, string? cc = null, string? bcc = null,
+            string to, string subject, string htmlBody, string txtBody, string? cc = null, string? bcc = null,
             CancellationToken cancellationToken = default
         )
         {
+            var txtView = AlternateView.CreateAlternateViewFromString(txtBody, Encoding.UTF8, "text/plain");
+            var htmlView = AlternateView.CreateAlternateViewFromString(htmlBody, Encoding.UTF8, "text/html");
+
             using var message = new MailMessage
             {
                 From = new MailAddress(_configuration.SMTP.From.Address, _configuration.SMTP.From.Name),
                 Subject = subject,
-                Body = htmlBody,
-                IsBodyHtml = true
             };
+
+            message.AlternateViews.Add(txtView);
+            message.AlternateViews.Add(htmlView);
 
             message.To.Add(to);
 

@@ -1,8 +1,10 @@
 ﻿using AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services;
 using AuxiliumSoftware.AuxiliumServices.Common.EntityFramework;
+using AuxiliumSoftware.AuxiliumServices.Common.EntityFramework.EntityModels;
 using AuxiliumSoftware.AuxiliumServices.Common.Messaging.Interfaces;
 using AuxiliumSoftware.AuxiliumServices.Common.Messaging.Models;
 using AuxiliumSoftware.AuxiliumServices.Common.Services;
+using AuxiliumSoftware.AuxiliumServices.Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,6 +25,11 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
         private IChannel? _channel;
         private const string QueueName = "email.notifications";
         private const string BindingPattern = "email.#";
+
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
         public NotificationWorker(
             IRabbitMqConnectionManager connectionManager,
@@ -64,7 +71,6 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
             var connection = await _connectionManager.GetConnectionAsync(stoppingToken);
             _channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
-            // declare exchange (must match producer - topic, durable)
             await _channel.ExchangeDeclareAsync(
                 exchange: _connectionManager.Configuration.ExchangeName,
                 type: ExchangeType.Topic,
@@ -72,7 +78,6 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
                 autoDelete: false,
                 cancellationToken: stoppingToken);
 
-            // declare and bind the queue
             await _channel.QueueDeclareAsync(
                 queue: QueueName,
                 durable: true,
@@ -87,7 +92,6 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
                 routingKey: BindingPattern,
                 cancellationToken: stoppingToken);
 
-            // one message at a time - don't fetch more until we've acked
             await _channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false,
                 cancellationToken: stoppingToken);
 
@@ -95,17 +99,52 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
 
             consumer.ReceivedAsync += async (_, ea) =>
             {
+                // declared outside try so the catch block can access them for logging
+                string? json = null;
+                EmailQueueMessage? message = null;
+
                 try
                 {
-                    await HandleMessageAsync(ea, stoppingToken);
-                    await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false,
-                        cancellationToken: stoppingToken);
+                    json = Encoding.UTF8.GetString(ea.Body.ToArray());
+
+                    _logger.LogDebug(
+                        "Received message {MessageId} with routing key '{RoutingKey}'",
+                        ea.BasicProperties?.MessageId, ea.RoutingKey);
+
+                    message = JsonSerializer.Deserialize<EmailQueueMessage>(json, JsonOptions);
+
+                    if (message == null)
+                    {
+                        _logger.LogWarning("Failed to deserialise message {MessageId}, nacking",
+                            ea.BasicProperties?.MessageId);
+                        await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false,
+                            cancellationToken: stoppingToken);
+                        return;
+                    }
+
+                    switch (message.RoutingKey)
+                    {
+                        case "email.send":
+                            await HandleSendEmailAsync(ea.BasicProperties?.MessageId, json, message, stoppingToken);
+                            break;
+                        default:
+                            _logger.LogWarning(
+                                "Unknown routing key '{RoutingKey}' on message {MessageId}, nacking",
+                                message.RoutingKey, ea.BasicProperties?.MessageId);
+                            await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false,
+                                cancellationToken: stoppingToken);
+                            return;
+                    }
+
+                    await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex,
                         "Failed to process message {MessageId}, nacking (requeue=false)",
                         ea.BasicProperties?.MessageId);
+
+                    await LogFailedActionAsync(ea, json, message, ex, stoppingToken);
 
                     await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false,
                         cancellationToken: stoppingToken);
@@ -122,40 +161,20 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
                 "Subscribed to queue '{Queue}' with binding '{Binding}'",
                 QueueName, BindingPattern);
 
-            // keep alive until cancelled or channel drops
             while (!stoppingToken.IsCancellationRequested && _channel.IsOpen)
             {
                 await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
             }
         }
 
-        private async Task HandleMessageAsync(BasicDeliverEventArgs ea, CancellationToken cancellationToken)
+        private async Task HandleSendEmailAsync(
+            string? rabbitMessageId, string json, EmailQueueMessage message, CancellationToken cancellationToken)
         {
-            var json = Encoding.UTF8.GetString(ea.Body.ToArray());
-
-            _logger.LogDebug(
-                "Received message {MessageId} with routing key '{RoutingKey}'",
-                ea.BasicProperties?.MessageId, ea.RoutingKey);
-
-            var message = JsonSerializer.Deserialize<EmailQueueMessage>(json, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
-
-            if (message == null)
-            {
-                _logger.LogWarning("Failed to deserialise message {MessageId}, skipping",
-                    ea.BasicProperties?.MessageId);
-                return;
-            }
-
             using var scope = _scopeFactory.CreateScope();
-
             var db = scope.ServiceProvider.GetRequiredService<AuxiliumDbContext>();
             var templateRenderer = scope.ServiceProvider.GetRequiredService<IEmailTemplateRenderer>();
             var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
-            // resolve user from the database
             var targetUser = await db.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == message.TargetUserId, cancellationToken);
@@ -164,29 +183,91 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
             {
                 _logger.LogWarning(
                     "User {UserId} not found for message {MessageId}, skipping",
-                    message.TargetUserId, ea.BasicProperties?.MessageId);
+                    message.TargetUserId, rabbitMessageId);
                 return;
             }
 
             var locale = targetUser.LanguagePreference ?? "en-GB";
-
-            // inject user fields into template data (won't overwrite if the producer set them explicitly)
             message.TemplateData.TryAdd("display_name", targetUser.FullName ?? targetUser.EmailAddress);
 
             var htmlBody = templateRenderer.Render(message.TemplateName, locale, message.TemplateData);
+            var txtBody = "Emails are currently not supported in plain text format.";
             var subject = templateRenderer.TranslateSubject(message.Subject, locale);
 
             await emailService.SendAsync(
                 to: targetUser.EmailAddress,
                 subject: subject,
                 htmlBody: htmlBody,
+                txtBody: txtBody,
                 cancellationToken: cancellationToken
             );
 
+            db.Add(new LogSystemMessageQueueSentEmailEntityModel
+            {
+                Id = UUIDUtilities.GenerateV5(Common.Enumerators.DatabaseObjectTypeEnum.Log_SystemMessageQueue_EmailSent_EventEntry),
+                CreatedAt = DateTime.UtcNow,
+
+                MessageId = message.MessageId,
+                MessageCreatedAt = message.CreatedAt,
+                MessageCorrelationId = message.CorrelationId,
+                MessageRoutingKey = message.RoutingKey,
+                MessageJson = json,
+
+                EmailRecipientAddress = targetUser.EmailAddress,
+                EmailRecipientName = targetUser.FullName ?? targetUser.EmailAddress,
+                EmailLanguage = locale,
+                EmailTemplate = message.TemplateName,
+                EmailSubject = subject,
+                EmailBodyHtml = htmlBody,
+                EmailBodyTxt = txtBody
+            });
+
+            await db.SaveChangesAsync(cancellationToken);
+
             _logger.LogInformation(
                 "Email sent to {To} via template '{Template}' (locale: {Locale}, message {MessageId})",
-                targetUser.EmailAddress, message.TemplateName, locale, ea.BasicProperties?.MessageId
-            );
+                targetUser.EmailAddress, message.TemplateName, locale, rabbitMessageId);
+        }
+
+        private async Task LogFailedActionAsync(
+            BasicDeliverEventArgs ea, string? json, EmailQueueMessage? message, Exception ex, CancellationToken cancellationToken)
+        {
+            // wrapped in its own try/catch - a logging failure must never swallow the nack
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<AuxiliumDbContext>();
+
+                var messageId = Guid.TryParse(ea.BasicProperties?.MessageId, out var parsed)
+                    ? parsed
+                    : Guid.Empty;
+
+                var messageCreatedAt = ea.BasicProperties?.Timestamp is { UnixTime: > 0 } ts
+                    ? DateTimeOffset.FromUnixTimeSeconds(ts.UnixTime).UtcDateTime
+                    : DateTime.UtcNow;
+
+                db.Add(new LogSystemMessageQueueFailedActionEntityModel
+                {
+                    Id = UUIDUtilities.GenerateV5(Common.Enumerators.DatabaseObjectTypeEnum.Log_SystemMessageQueue_FailedAction_EventEntry),
+                    CreatedAt = DateTime.UtcNow,
+
+                    MessageId = messageId,
+                    MessageCreatedAt = messageCreatedAt,
+                    MessageCorrelationId = ea.BasicProperties?.CorrelationId ?? string.Empty,
+                    MessageRoutingKey = message?.RoutingKey ?? ea.RoutingKey,
+                    MessageJson = json ?? string.Empty,
+
+                    ExceptionType = ex.GetType().FullName ?? ex.GetType().Name,
+                    ExceptionMessage = ex.Message,
+                    ExceptionStackTrace = ex.StackTrace ?? string.Empty
+                });
+
+                await db.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception logEx)
+            {
+                _logger.LogCritical(logEx, "Failed to write failed-action log to the database");
+            }
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)

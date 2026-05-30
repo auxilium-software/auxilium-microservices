@@ -6,7 +6,7 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services
 {
     public interface IEmailService
     {
-        Task SendAsync(string to, string subject, string htmlBody,
+        Task SendAsync(string to, string subject, string htmlBody, string txtBody,
             string? cc = null, string? bcc = null,
             CancellationToken cancellationToken = default);
     }
