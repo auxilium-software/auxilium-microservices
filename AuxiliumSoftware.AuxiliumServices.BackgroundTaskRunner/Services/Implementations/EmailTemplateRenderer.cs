@@ -29,7 +29,7 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services.Implem
 
         public string Render(string templateName, string locale, Dictionary<string, string> data)
         {
-            var resourceName = $"{_assemblyName}.Templates.{templateName}.html";
+            var resourceName = $"{_assemblyName}.Templates.Emails.{templateName}.html";
             var templateText = ReadResource(resourceName);
 
             if (templateText == null)
