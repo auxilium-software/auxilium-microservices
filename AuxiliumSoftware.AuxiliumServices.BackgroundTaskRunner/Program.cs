@@ -110,7 +110,7 @@ builder.Services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
 
 
 // workers
-builder.Services.AddHostedService<NotificationWorker>();
+builder.Services.AddHostedService<NotificationBackgroundService>();
 
 
 

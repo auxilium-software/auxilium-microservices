@@ -16,11 +16,11 @@ using System.Text.Json;
 
 namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServices
 {
-    public class NotificationWorker : BackgroundService
+    public class NotificationBackgroundService : BackgroundService
     {
         private readonly IRabbitMqConnectionManager _connectionManager;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger<NotificationWorker> _logger;
+        private readonly ILogger<NotificationBackgroundService> _logger;
 
         private IChannel? _channel;
         private const string QueueName = "email.notifications";
@@ -31,10 +31,10 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        public NotificationWorker(
+        public NotificationBackgroundService(
             IRabbitMqConnectionManager connectionManager,
             IServiceScopeFactory scopeFactory,
-            ILogger<NotificationWorker> logger
+            ILogger<NotificationBackgroundService> logger
         )
         {
             _connectionManager = connectionManager;
