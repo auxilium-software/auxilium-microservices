@@ -205,7 +205,7 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
             db.Add(new LogSystemMessageQueueSentEmailEntityModel
             {
                 Id = UUIDUtilities.GenerateV5(Common.Enumerators.DatabaseObjectTypeEnum.Log_SystemMessageQueue_EmailSent_EventEntry),
-                CreatedAt = DateTime.UtcNow,
+                CreatedAtUtc = DateTime.UtcNow,
 
                 MessageId = message.MessageId,
                 MessageCreatedAt = message.CreatedAt,
@@ -249,10 +249,10 @@ namespace AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServi
                 db.Add(new LogSystemMessageQueueFailedActionEntityModel
                 {
                     Id = UUIDUtilities.GenerateV5(Common.Enumerators.DatabaseObjectTypeEnum.Log_SystemMessageQueue_FailedAction_EventEntry),
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAtUtc = DateTime.UtcNow,
 
                     MessageId = messageId,
-                    MessageCreatedAt = messageCreatedAt,
+                    MessageCreatedAtUtc = messageCreatedAt,
                     MessageCorrelationId = ea.BasicProperties?.CorrelationId ?? string.Empty,
                     MessageRoutingKey = message?.RoutingKey ?? ea.RoutingKey,
                     MessageJson = json ?? string.Empty,
