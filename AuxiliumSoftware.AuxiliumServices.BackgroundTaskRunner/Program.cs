@@ -1,4 +1,5 @@
 ﻿using AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServices;
+using AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServices.CronJobs;
 using AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services;
 using AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services.Implementations;
 using AuxiliumSoftware.AuxiliumServices.Common.Configuration.Sections.Databases;
@@ -111,6 +112,16 @@ builder.Services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
 
 // workers
 builder.Services.AddHostedService<NotificationBackgroundService>();
+
+
+
+
+
+
+// cronjobs
+builder.Services.AddHostedService<DatabaseSizeWorker>();
+builder.Services.AddHostedService<LfsSizeWorker>();
+builder.Services.AddHostedService<ServiceUsageStatisticsWorker>();
 
 
 
