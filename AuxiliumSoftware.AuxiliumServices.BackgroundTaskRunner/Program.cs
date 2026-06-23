@@ -1,10 +1,14 @@
 ﻿using AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServices;
-using AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.BackgroundServices.CronJobs;
 using AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services;
 using AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.Services.Implementations;
 using AuxiliumSoftware.AuxiliumServices.Common.Configuration.Sections.Databases;
 using AuxiliumSoftware.AuxiliumServices.Common.EntityFramework;
+using AuxiliumSoftware.AuxiliumServices.Common.EntityFramework.Enumerators;
 using AuxiliumSoftware.AuxiliumServices.Common.Messaging;
+using AuxiliumSoftware.AuxiliumServices.Common.Metrics.Collectors;
+using AuxiliumSoftware.AuxiliumServices.Common.Metrics.Common;
+using AuxiliumSoftware.AuxiliumServices.Common.Metrics.Interfaces;
+using AuxiliumSoftware.AuxiliumServices.Common.Metrics.Workers;
 using AuxiliumSoftware.AuxiliumServices.Common.Services;
 using AuxiliumSoftware.AuxiliumServices.Common.Services.Implementations;
 using Microsoft.EntityFrameworkCore;
@@ -115,13 +119,30 @@ builder.Services.AddHostedService<NotificationBackgroundService>();
 
 
 
+// metrics
+builder.Services.AddSingleton<IMetricCollector>(_ => new ProcessResourceCollector(new ProcessMetricKeys(
+    Cpu: SystemMetricKeyEnum.TaskRunner_CpuUsageAsPercentage,
+    Memory: SystemMetricKeyEnum.TaskRunner_MemoryUsageInBytes,
+    Uptime: SystemMetricKeyEnum.TaskRunner_UptimeInSeconds)));
 
+builder.Services.AddSingleton<IMetricCollector>(_ => new RuntimeCollector(new RuntimeMetricKeys(
+    ThreadPoolQueueLength: SystemMetricKeyEnum.TaskRunner_ThreadPoolQueueLength,
+    Gen0CollectionsPerMinute: SystemMetricKeyEnum.TaskRunner_Gen0CollectionsPerMinute,
+    Gen1CollectionsPerMinute: SystemMetricKeyEnum.TaskRunner_Gen1CollectionsPerMinute,
+    Gen2CollectionsPerMinute: SystemMetricKeyEnum.TaskRunner_Gen2CollectionsPerMinute,
+    TimeInGcPercentage: SystemMetricKeyEnum.TaskRunner_TimeInGcAsPercentage)));
 
+builder.Services.AddSingleton<IMetricCollector, ApiReachabilityCollector>();
+builder.Services.AddHttpClient();
 
-// cronjobs
-builder.Services.AddHostedService<DatabaseSizeWorker>();
-builder.Services.AddHostedService<LfsSizeWorker>();
-builder.Services.AddHostedService<ServiceUsageStatisticsWorker>();
+builder.Services.AddScoped<IMetricCollector, HostResourceCollector>();
+builder.Services.AddScoped<IMetricCollector, LfsCollector>();
+builder.Services.AddSingleton<IMetricCollector, DatabaseStatusCollector>();
+builder.Services.AddSingleton<IMetricCollector, RabbitMqCollector>();
+
+builder.Services.AddHostedService<MinutelyMetricsWorker>();
+builder.Services.AddHostedService<HourlyMetricsWorker>();
+
 
 
 
