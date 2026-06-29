@@ -7,7 +7,9 @@ using AuxiliumSoftware.AuxiliumServices.Common.EntityFramework.Enumerators;
 using AuxiliumSoftware.AuxiliumServices.Common.Messaging;
 using AuxiliumSoftware.AuxiliumServices.Common.Metrics.Collectors;
 using AuxiliumSoftware.AuxiliumServices.Common.Metrics.Common;
+using AuxiliumSoftware.AuxiliumServices.Common.Metrics.Enumerators;
 using AuxiliumSoftware.AuxiliumServices.Common.Metrics.Interfaces;
+using AuxiliumSoftware.AuxiliumServices.Common.Metrics.Sinks;
 using AuxiliumSoftware.AuxiliumServices.Common.Metrics.Workers;
 using AuxiliumSoftware.AuxiliumServices.Common.Services;
 using AuxiliumSoftware.AuxiliumServices.Common.Services.Implementations;
@@ -120,6 +122,8 @@ builder.Services.AddHostedService<NotificationBackgroundService>();
 
 
 // metrics
+builder.Services.AddSingleton<IMetricSink, JsonlMetricSink>();
+
 builder.Services.AddSingleton<IMetricCollector>(_ => new ProcessResourceCollector(new ProcessMetricKeys(
     Cpu: SystemMetricKeyEnum.TaskRunner_CpuUsageAsPercentage,
     Memory: SystemMetricKeyEnum.TaskRunner_MemoryUsageInBytes,
