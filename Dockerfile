@@ -33,13 +33,7 @@ FROM restore AS dev
 
 ENV DOTNET_ENVIRONMENT=Development
 
-ENTRYPOINT [
-    "dotnet", "watch", "run",
-    "--project", "AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner",
-    "--no-launch-profile",
-    "--",
-    "--config-path", "/etc/auxilium/config.yaml"
-]
+ENTRYPOINT ["dotnet", "watch", "run", "--project", "AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner", "--no-launch-profile", "--", "--config-path", "/etc/auxilium/config.yaml"]
 
 
 # ==================================================
@@ -61,7 +55,4 @@ RUN mkdir -p \
 
 USER app
 
-ENTRYPOINT [
-    "dotnet", "AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.dll",
-    "--config-path", "/etc/auxilium/config.yaml"
-]
+ENTRYPOINT ["dotnet", "AuxiliumSoftware.AuxiliumServices.BackgroundTaskRunner.dll", "--config-path", "/etc/auxilium/config.yaml"]
