@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AuxiliumSoftware.AuxiliumServices.Common" Version="3.0.47.0" />
+    <PackageReference Include="MailKit" Version="4.16.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.6" />
+    <PackageReference Include="Scriban" Version="7.2.5" />
+    <PackageReference Include="YamlDotNet.NetCore" Version="1.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\Emails\*.html" />
+    <EmbeddedResource Include="Translations.json" />
+  </ItemGroup>
+
+</Project>

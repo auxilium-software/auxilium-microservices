@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html>
+<html lang="{{ locale }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t "New Client Registration" }}</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f5f7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f5f7; padding:32px 16px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px; width:100%; box-shadow:0 4px 24px rgba(0,0,0,0.10);">
+
+                    <!-- header -->
+                    <tr>
+                        <td style="background-color:#152133; border-top:5px solid #e08910; border-radius:8px 8px 0 0; padding:24px 32px; text-align:center;">
+                            <h1 style="margin:0; font-size:12px; font-weight:700; color:#ffffff; letter-spacing:3px; text-transform:uppercase;">
+                                {{ t "Auxilium" }}
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <!-- body -->
+                    <tr>
+                        <td style="background-color:#ffffff; padding:40px 32px;">
+                            <h2 style="margin:0 0 24px 0; font-size:22px; font-weight:600; color:#000000;">
+                                {{ t "New Client Registration" }}
+                            </h2>
+                            <p style="margin:0 0 16px 0; font-size:15px; line-height:1.6; color:#000000;">
+                                {{ t "Hi" }} {{ display_name }},
+                            </p>
+                            <p style="margin:0 0 24px 0; font-size:15px; line-height:1.6; color:#000000;">
+                                {{ t "A new client has signed up to the portal. Their details are available below - please review and assign a case worker as appropriate." }}
+                            </p>
+
+                            <!-- user id box -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 28px 0; background-color:#f9fafb; border:1px solid #e5e7eb; border-radius:6px;">
+                                <tr>
+                                    <td style="padding:16px 20px;">
+                                        <p style="margin:0 0 6px 0; font-size:12px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px;">
+                                            {{ t "Client User ID" }}
+                                        </p>
+                                        <p style="margin:0; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size:14px; line-height:1.4; color:#000000; word-break:break-all;">
+                                            {{ client_user_id }}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- action button -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 28px 0;">
+                                <tr>
+                                    <td style="border-radius:8px; background-color:#e08910;">
+                                        <a href="{{ view_link }}"
+                                           style="display:inline-block; padding:14px 32px; font-size:15px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:8px; letter-spacing:0.2px;">
+                                            {{ t "View Client in Portal" }}
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- privacy notice -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0; background-color:#eef6fd; border-left:3px solid #007adc; border-radius:0 4px 4px 0;">
+                                <tr>
+                                    <td style="padding:12px 16px;">
+                                        <p style="margin:0; font-size:13px; line-height:1.5; color:#000000;">
+                                            {{ t "For your security, client details are not included in this email. Please log in to the portal to view them." }}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- fallback link -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:24px 0 0 0; border-top:1px solid #e5e7eb;">
+                                <tr>
+                                    <td style="padding:20px 0 0 0;">
+                                        <p style="margin:0; font-size:12px; line-height:1.5; color:#9ca3af;">
+                                            {{ t "If the button above doesn't work, copy and paste this link into your browser:" }}
+                                        </p>
+                                        <p style="margin:4px 0 0 0; font-size:12px; line-height:1.5; color:#9ca3af; word-break:break-all;">
+                                            {{ view_link }}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- footer -->
+                    <tr>
+                        <td style="background-color:#090e17; border-top:1px solid rgba(255,255,255,0.06); border-radius:0 0 8px 8px; padding:24px 32px; text-align:center;">
+                            <p style="margin:0 0 4px 0; font-size:12px; color:#9ca3af;">
+                                {{ t "This is an automated message - please do not reply to this email." }}
+                            </p>
+                            <p style="margin:0; font-size:12px; color:#9ca3af;">
+                                {{ t "If you need help, contact your system administrator." }}
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
